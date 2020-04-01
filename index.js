@@ -175,7 +175,7 @@ async function getSpreadsheetSheetsTitles() {
 app.use(express.json());
 
 // Required to serve static files like front end js and css.
-app.use(express.static('./'));
+app.use(express.static('public'));
 
 app.listen(3000, function() {
     console.log('Listening on port 3000.');

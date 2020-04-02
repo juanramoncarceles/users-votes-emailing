@@ -5,6 +5,8 @@ const fsPromises = fs.promises;
 const readline = require('readline');
 const {google} = require('googleapis');
 
+const emailDataManagement = require('./emailDataManagement');
+
 const express = require('express');
 // Express initialization.
 const app = express();
@@ -194,13 +196,44 @@ app.get('/', function(req, res) {
 app.post('/', function(request, response){
     // Obtain the selected version to get the data. 
     const ver = request.body.version;
-    console.log(ver);
-    // listBugsData(ver); // for example "2.7.1"
-    const emailsBodies = createMailOptions(data);
-    response.json(emailsBodies);
+    console.log('Selected version: ', ver); // for example "2.7.1"
+    listBugsData(ver).then(bugsData => {
+      // Format it to mailOptions objects for nodemailer.
+      const emailsContent = emailDataManagement.createMailOptions('Ramon <ramon@asuni.com>', ver, bugsData, ''); // Las one will be in the request.body.url
+      console.log(emailsContent);
+      response.json(emailsContent);
+    }, rejected => {
+      console.log('Fetching bugs data failed ', rejected);
+    });
   });
 
 
+/**
+ * Gets the data from the Google Sheet and returns the content to send.
+ * @param {String} version The name of the sheet.
+ */
+async function listBugsData(version) {
+  const auth = await testAuthorize();
+  const request = {
+    spreadsheetId: '1pqQS57mgY8VzqUmok9MXLiSsY7jAWM6bLZqFyB6NfCA',
+    range: version
+  };
+  const sheets = google.sheets({version: 'v4', auth});
+  try {
+    const response = await sheets.spreadsheets.values.get(request);
+    const googleSheetsData = response.data.values;
+    if (googleSheetsData.length) {
+      return googleSheetsData;
+    } else {
+      console.log('No data found.');
+    }
+  } catch (err) {
+    console.error('The API returned an error: ' + err);
+  }
+}
+
+// Put this to be called after confirmation
+// nodemailer.sendMails(mailOptions);
 
 /**
  * Returns the HTML page as a string.
@@ -216,36 +249,60 @@ function createPageTemplate(versions) {
       <title>User Votes Emailing</title>
       <style>
         body {
-          font-family:sans-serif;
+          margin: 0;
+          font-family: sans-serif;
         }
         .main-container {
           width: 80%;
           max-width: 850px;
           margin: auto;
         }
+        .header {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          background-color: #f4f4f4;
+          box-shadow: 0px 2px 4px #B5B5B5;
+        }
         h1 {
-          text-align:center;
+          text-align: center;
         }
         .controls {
-          display:flex;
-          margin-bottom:1.5rem;
+          display: flex;
+          padding: 0.5rem;
+        }
+        .emails-list-container {
+          margin-top: 9rem;
+        }
+        .email-body {
+          padding: 1rem;
+          border: 1px solid lightgray;
+          background-color: #fff;
+        }
+        .email-content {
+          padding: 1rem;
+          border: 2px solid lightgray;  
+          background-color: #f5f5f5;  
         }
       </style>
     </head>
     <body>
       <div class="main-container">
-        <h1>Emails to be send</h1>
-        <div class="controls">
-          <form>
+        <div class="header">
+          <h1>Emails to be send</h1>
+          <div class="controls">
+            <form>
               <label for="versionSelect">Choose a version:</label>
               <select name="version" id="versionSelect">
                   <option value="">--Choose a version--</option>
                   ${versionsOptions}
               </select>
-          </form>
-          <button id="sendEmailsBtn">Send emails</button>
+            </form>
+            <button id="sendEmailsBtn">Send emails</button>
+          </div>
         </div>
-        <div id="emailsPreview"></div>
+        <div id="emailsPreview" class="emails-list-container"></div>
       </div>
       <script type="text/javascript" src="./client.js"></script>
     </body>

@@ -64,13 +64,44 @@ async function testAuthorize() {
     const content = await fsPromises.readFile(TOKEN_PATH, 'utf-8');
     oAuth2Client.setCredentials(JSON.parse(content));
   } catch (err) {
-    //if (err) return getNewToken(oAuth2Client, callback);
-    if (err) console.log(err);
+    if (err) return await getNewToken2(oAuth2Client, callback);
+    //if (err) console.log(err);
   }
   if (oAuth2Client == null) {
     throw Error('authentication failed');
   }
   return oAuth2Client;
+}
+
+
+/**
+ * Get and store new token after prompting for user authorization, and then
+ * returns the authorized OAuth2 client.
+ * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
+ */
+async function getNewToken2(oAuth2Client) {
+  const authUrl = oAuth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: SCOPES,
+  });
+  console.log('Authorize this app by visiting this url:', authUrl);
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  rl.question('Enter the code from that page here: ', (code) => {
+    rl.close();
+    oAuth2Client.getToken(code, (err, token) => {
+      if (err) return console.error('Error while trying to retrieve access token', err);
+      oAuth2Client.setCredentials(token);
+      // Store the token to disk for later program executions
+      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+        if (err) return console.error(err);
+        console.log('Token stored to', TOKEN_PATH);
+      });
+      return oAuth2Client;
+    });
+  });
 }
 
 
@@ -200,7 +231,7 @@ app.post('/', function(request, response){
     listBugsData(ver).then(bugsData => {
       // Format it to mailOptions objects for nodemailer.
       const emailsContent = emailDataManagement.createMailOptions('Ramon <ramon@asuni.com>', ver, bugsData, ''); // Las one will be in the request.body.url
-      console.log(emailsContent);
+      //console.log(emailsContent);
       response.json(emailsContent);
     }, rejected => {
       console.log('Fetching bugs data failed ', rejected);
@@ -246,76 +277,27 @@ function createPageTemplate(versions) {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="style.css">
       <title>User Votes Emailing</title>
-      <style>
-        body {
-          margin: 0;
-          font-family: sans-serif;
-        }
-        .main-container {
-          width: 80%;
-          max-width: 850px;
-          margin: auto;
-        }
-        .header {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          background-color: #f4f4f4;
-          box-shadow: 0px 2px 4px #B5B5B5;
-        }
-        h1 {
-          text-align: center;
-        }
-        .controls {
-          display: flex;
-          padding: 0.5rem;
-        }
-        .emails-list-container {
-          margin-top: 9rem;
-        }
-        .email-body {
-          padding: 1rem;
-          border: 1px solid lightgray;
-          background-color: #fff;
-        }
-        .email-content {
-          padding: 1rem;
-          border: 2px solid lightgray;  
-          background-color: #f5f5f5;  
-        }
-      </style>
     </head>
     <body>
-      <div class="main-container">
-        <div class="header">
-          <h1>Emails to be send</h1>
-          <div class="controls">
-            <form>
-              <label for="versionSelect">Choose a version:</label>
-              <select name="version" id="versionSelect">
-                  <option value="">--Choose a version--</option>
-                  ${versionsOptions}
-              </select>
-            </form>
-            <button id="sendEmailsBtn">Send emails</button>
-          </div>
+      <div class="header">
+        <h1>Emails to be send</h1>
+        <div class="controls">
+          <form>
+            <label for="versionSelect">Choose a version:</label>
+            <select name="version" id="versionSelect">
+                <option value="">--Choose a version--</option>
+                ${versionsOptions}
+            </select>
+          </form>
+          <button id="sendEmailsBtn">Send emails</button>
         </div>
+      </div>
+      <div class="main-container">
         <div id="emailsPreview" class="emails-list-container"></div>
       </div>
       <script type="text/javascript" src="./client.js"></script>
     </body>
     </html>`;
-}
-
-
-
-// Temporary to be replaced by the one in the other project.
-function createMailOptions(data) {
-  const emails = [];
-  for (let i = 0; i < 10; i++) {
-    emails.push(`This is the email ${i} for version ${version}`);
-  }
-  return emails;
 }

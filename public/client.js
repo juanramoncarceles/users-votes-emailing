@@ -20,7 +20,7 @@ function getEmailsPreview(version) {
       return res.json();
     })
     .then(emailsContent => {
-      console.log(emailsContent);
+      //console.log(emailsContent);
       const previewEmailsContent = emailsContent.map(content => {
         return `<div class="email-content">
             <p><strong>from: </strong><span>${content.from}</span></p>

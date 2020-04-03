@@ -1,0 +1,53 @@
+:root {
+  --global-width: 80%;
+  --global-max-width: 850px;
+}
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.main-container {
+  width: var(--global-width);
+  max-width: var(--global-max-width);
+  margin: 9rem auto 2rem;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #f4f4f4;
+  box-shadow: 0px 2px 4px #B5B5B5;
+}
+
+h1 {
+  text-align: center;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  width: var(--global-width);
+  max-width: var(--global-max-width);
+  margin: auto;
+}
+
+.emails-list-container {
+  margin-top: 9rem;
+}
+
+.email-body {
+  padding: 1rem;
+  border: 1px solid lightgray;
+  background-color: #fff;
+}
+
+.email-content {
+  padding: 1rem;
+  border: 2px solid lightgray;  
+  background-color: #f5f5f5;  
+}

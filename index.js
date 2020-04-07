@@ -22,32 +22,11 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 const TOKEN_PATH = 'token.json';
 
 
-// Load client secrets from a local file.
-fs.readFile('credentials.json', (err, content) => {
-  if (err) return console.log('Error loading client secret file:', err);
-  // Authorize a client with credentials, then call the Google Sheets API.
-  authorize(JSON.parse(content), listData);
-});
-
 
 /**
- * Create an OAuth2 client with the given credentials, and then execute the
- * given callback function.
- * @param {Object} credentials The authorization client credentials.
- * @param {function} callback The callback to call with the authorized client.
+ * Reads the contents of the credentials file and creates an OAuth2 client.
+ * If unsuccesfull it returns an object with the error message.
  */
-function authorize(credentials, callback) {
-  const {client_secret, client_id, redirect_uris} = credentials.installed;
-  const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-
-  // Check if we have previously stored a token.
-  fs.readFile(TOKEN_PATH, (err, token) => {
-    if (err) return getNewToken(oAuth2Client, callback);
-    oAuth2Client.setCredentials(JSON.parse(token));
-    callback(oAuth2Client);
-  });
-}
-
 async function testAuthorize() {
   let credentials;  
   try {
@@ -55,20 +34,22 @@ async function testAuthorize() {
     const content = await fsPromises.readFile('credentials.json', 'utf-8');
     credentials = JSON.parse(content);
   } catch (err) {
-    return console.log('Error loading client secret file:', err);
+    return { error: true, msg: err };
   }
   const {client_secret, client_id, redirect_uris} = credentials.installed;
-  const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+  let oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
   try {
     // Check if we have previously stored a token.
     const content = await fsPromises.readFile(TOKEN_PATH, 'utf-8');
     oAuth2Client.setCredentials(JSON.parse(content));
   } catch (err) {
-    if (err) return await getNewToken2(oAuth2Client, callback);
-    //if (err) console.log(err);
+    if (err) {
+      getNewToken2(oAuth2Client);
+      return { error: true, msg: err };
+    }
   }
   if (oAuth2Client == null) {
-    throw Error('authentication failed');
+    return { error: true, msg: 'Authentication failed. Empty authentication authenticated Google OAuth client object.' }
   }
   return oAuth2Client;
 }
@@ -89,103 +70,66 @@ async function getNewToken2(oAuth2Client) {
     input: process.stdin,
     output: process.stdout,
   });
-  rl.question('Enter the code from that page here: ', (code) => {
-    rl.close();
-    oAuth2Client.getToken(code, (err, token) => {
-      if (err) return console.error('Error while trying to retrieve access token', err);
-      oAuth2Client.setCredentials(token);
-      // Store the token to disk for later program executions
-      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-        if (err) return console.error(err);
-        console.log('Token stored to', TOKEN_PATH);
-      });
-      return oAuth2Client;
+  const code = await testWaitQuestion(rl, 'Enter the code from that page here: ');
+  try {
+    if (!code) throw Error('No code was provided.');
+    // This will provide an object with the access_token and refresh_token.
+    const { tokens } = await oAuth2Client.getToken(code);
+    oAuth2Client.setCredentials(tokens);
+    // Store the token to disk for later program executions.
+    fs.writeFile(TOKEN_PATH, JSON.stringify(tokens), (err) => {
+      if (err) return console.error(err);
+      console.log('Token stored to', TOKEN_PATH);
     });
-  });
+  } catch (err) {
+    console.error('Error while trying to retrieve access token.');
+  }
 }
 
 
 /**
- * Get and store new token after prompting for user authorization, and then
- * execute the given callback with the authorized OAuth2 client.
- * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
- * @param {getEventsCallback} callback The callback for the authorized client.
+ * 
+ * @param {*} rl 
+ * @param {*} q 
  */
-function getNewToken(oAuth2Client, callback) {
-  const authUrl = oAuth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: SCOPES,
-  });
-  console.log('Authorize this app by visiting this url:', authUrl);
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-  rl.question('Enter the code from that page here: ', (code) => {
-    rl.close();
-    oAuth2Client.getToken(code, (err, token) => {
-      if (err) return console.error('Error while trying to retrieve access token', err);
-      oAuth2Client.setCredentials(token);
-      // Store the token to disk for later program executions
-      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-        if (err) return console.error(err);
-        console.log('Token stored to', TOKEN_PATH);
+function testWaitQuestion(rl, q) {
+  var response;
+  rl.setPrompt(q);
+  rl.prompt();
+  return new Promise(( resolve , reject) => {
+      rl.on('line', (userInput) => {
+          response = userInput;
+          rl.close();
       });
-      callback(oAuth2Client);
-    });
+      rl.on('close', () => {
+          resolve(response);
+      });
   });
 }
 
 
-/**
- * Gets the data from the Google Sheet and prepares it to send.
- * @see https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
- * @param {google.auth.OAuth2} auth The authenticated Google OAuth client.
- */
-function listData(auth) {
-  const sheets = google.sheets({version: 'v4', auth});
-  sheets.spreadsheets.values.get({
-    spreadsheetId: '1pqQS57mgY8VzqUmok9MXLiSsY7jAWM6bLZqFyB6NfCA',
-    range: 'test1' // versionData.version
-  }, (err, res) => {
-    if (err) {
-      return console.log('The API returned an error: ' + err);
-    }
-    const googleSheetsData = res.data.values;
-    if (googleSheetsData.length) {
-      console.log(googleSheetsData);
-      // const readline = require('readline').createInterface({
-      //   input: process.stdin,
-      //   output: process.stdout
-      // });
-      // // Format it to mailOptions objects for nodemailer:
-      // const mailOptions = emailDataManagement.createMailOptions('Ramon <ramon@asuni.com>', versionData.version, googleSheetsData, versionData.url);
-      // readline.question(`${console.log(mailOptions)} \nIs this information right? Enter 'y' to confirm and send emails or any other key to cancel: `, (input) => {
-      //   if (input === 'y') {
-      //     console.log("Emails are being sent.");
-      //     // Here logic to send emails:
-      //     nodemailer.sendMails(mailOptions);
-      //   } else {
-      //     console.log("Process aborted.");
-      //   }
-      //   readline.close();
-      // });
-    } else {
-      console.log('No data found.');
-    }
-  });
-}
+
+
+
+
+
 
 const sheets = google.sheets('v4');
 
+/**
+ * Gets the titles from the sheets of a Google spreadsheet.
+ */
 async function getSpreadsheetSheetsTitles() {
-  const auth = await testAuthorize();
+  const oAuth2Client = await testAuthorize();
+  if (oAuth2Client == null || oAuth2Client.error ) {
+    return Promise.reject(oAuth2Client.msg);
+  }
   const request = {
     spreadsheetId: '1pqQS57mgY8VzqUmok9MXLiSsY7jAWM6bLZqFyB6NfCA',
     //ranges: [],  // No content requested.
     includeGridData: false,
     fields: 'sheets.properties',
-    auth: auth,
+    auth: oAuth2Client,
   };
   try {
     const response = (await sheets.spreadsheets.get(request)).data;
@@ -195,7 +139,7 @@ async function getSpreadsheetSheetsTitles() {
     }
     return sheetsTitles;
   } catch (err) {
-    console.error(err);
+    return Promise.reject(err);
   }
 }
 
@@ -219,24 +163,48 @@ app.get('/', function(req, res) {
       const pageTemplate = createPageTemplate(titles);
       res.send(pageTemplate);
     }, rej => {
-      console.log(rej);
+      //console.log('Rejected response: ', rej);
+      res.status(500).send('<strong>Internal Server Error:</strong> ' + rej.toString());
     });
   });
 
+let emailsContent;
+
 // Access the parse results as request.body
-app.post('/', function(request, response){
+app.post('/', function(request, response) {
     // Obtain the selected version to get the data. 
     const ver = request.body.version;
     console.log('Selected version: ', ver); // for example "2.7.1"
     listBugsData(ver).then(bugsData => {
-      // Format it to mailOptions objects for nodemailer.
-      const emailsContent = emailDataManagement.createMailOptions('Ramon <ramon@asuni.com>', ver, bugsData, ''); // Las one will be in the request.body.url
-      //console.log(emailsContent);
-      response.json(emailsContent);
+      if (bugsData.length > 0) {
+        // Format it to mailOptions objects for nodemailer.
+        emailsContent = emailDataManagement.createMailOptions('Ramon <ramon@asuni.com>', ver, bugsData, ''); // Last one will be in the request.body.url
+        response.json(emailsContent);
+      } else {
+        response.json(null);
+      }
     }, rejected => {
       console.log('Fetching bugs data failed ', rejected);
     });
   });
+
+
+app.post('/send-emails', function(req, res) {
+  sendEmails(emailsContent).then(resolved => {
+    // send the succes to remove the waiting.
+  }, rejected => {
+    // send the error to remove the waiting.
+  });
+});
+
+
+/**
+ * 
+ * @param {*} mailOptions 
+ */
+async function sendEmails(mailOptions) {
+  // nodemailer.sendMails(mailOptions);
+}
 
 
 /**
@@ -263,8 +231,7 @@ async function listBugsData(version) {
   }
 }
 
-// Put this to be called after confirmation
-// nodemailer.sendMails(mailOptions);
+
 
 /**
  * Returns the HTML page as a string.

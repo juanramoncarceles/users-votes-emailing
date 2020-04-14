@@ -1,0 +1,8 @@
+FRONT-END
+Add dialog to confirm the action of sending the emails.
+
+
+BACK-END
+Add nodemailer to send emails.
+
+Read also names associated to emails on the Google sheet.

@@ -171,7 +171,7 @@ app.get('/', function(req, res) {
 let emailsContent;
 
 // Access the parse results as request.body
-app.post('/', function(request, response) {
+app.post('/emails/preview', function(request, response) {
     // Obtain the selected version to get the data. 
     const ver = request.body.version;
     console.log('Selected version: ', ver); // for example "2.7.1"
@@ -189,12 +189,14 @@ app.post('/', function(request, response) {
   });
 
 
-app.post('/send-emails', function(req, res) {
-  sendEmails(emailsContent).then(resolved => {
-    // send the succes to remove the waiting.
-  }, rejected => {
-    // send the error to remove the waiting.
-  });
+app.post('/emails/send', function(req, res) {
+  const order = req.body.order;
+  console.log(order);
+  // sendEmails(emailsContent).then(resolved => {
+  //   // send the succes to remove the waiting.
+  // }, rejected => {
+  //   // send the error to remove the waiting.
+  // });
 });
 
 
@@ -260,6 +262,7 @@ function createPageTemplate(versions) {
           </form>
           <button id="sendEmailsBtn">Send emails</button>
         </div>
+        <div id="emailingDetails" class="emailing-details"></div>
       </div>
       <div class="main-container">
         <div id="emailsPreview" class="emails-list-container"></div>

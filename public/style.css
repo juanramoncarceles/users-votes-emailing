@@ -30,24 +30,48 @@ h1 {
 .controls {
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem 0;
+  padding-bottom: 1rem;
   width: var(--global-width);
   max-width: var(--global-max-width);
   margin: auto;
 }
 
 .emails-list-container {
-  margin-top: 9rem;
+  margin-top: 13rem;
 }
 
 .email-body {
-  padding: 1rem;
+  padding: 0.8rem;
   border: 1px solid lightgray;
   background-color: #fff;
 }
 
+.email-body p {
+  margin: 0.5rem 0;
+}
+
 .email-content {
-  padding: 1rem;
-  border: 2px solid lightgray;  
+  padding: 0.8rem;
+  margin-bottom: 0.8rem;
+  border: 2px solid lightgray;
   background-color: #f5f5f5;  
+}
+
+.email-content > .recipient {
+  margin-top: 0;
+  margin-bottom: 0.6rem;
+}
+
+.emailing-details {
+  text-align: center;
+  border-top: 1px solid #cacaca;
+}
+
+.emailing-details > h3 {
+  margin: 0.6rem 0;
+}
+
+.emailing-details > p {
+  margin: 0;
+  padding-bottom: 0.5rem;
 }

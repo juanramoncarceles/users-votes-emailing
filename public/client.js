@@ -3,12 +3,12 @@ const emailsPreviewContainer = document.getElementById('emailsPreview');
 const sendEmailsBtn = document.getElementById('sendEmailsBtn');
 const emailingDetails = document.getElementById('emailingDetails');
 
-selectVersion.addEventListener('change', e => {
-  //console.log(e.target.selectedIndex);
-  // TODO value shuld be different than 
-  getEmailsPreview(e.target.value);
-});
 
+/**
+ * Fetches the an array of the emails contents and and adds the contents
+ * to the DOM for preview purposes.
+ * @param {string} version For example: "2.5", "2.6"...
+ */
 function getEmailsPreview(version) {
   fetch('http://localhost:3000/emails/preview', {
     method: 'POST',
@@ -35,11 +35,18 @@ function getEmailsPreview(version) {
     });
 }
 
-sendEmailsBtn.addEventListener('click', () => {
-  //console.log('Emails are going to be send. Are you sure?');
-  sendEmails(); // TODO: Call this instead from the confirm button.
+
+selectVersion.addEventListener('change', e => {
+  //console.log(e.target.selectedIndex);
+  // TODO: value should be different than current
+  getEmailsPreview(e.target.value);
 });
 
+
+/**
+ * Executes the request to send the emails from the backend.
+ * TODO: Disable the option to call this function if any preview has been requested.
+ */
 function sendEmails() {
   fetch('http://localhost:3000/emails/send', {
     method: 'POST',
@@ -51,3 +58,9 @@ function sendEmails() {
     console.log(res);
   });
 }
+
+
+sendEmailsBtn.addEventListener('click', () => {
+  // Show dialog with a question: 'Emails are going to be send. Do you want to proceed?
+  sendEmails(); // TODO: Call this instead from the confirm button of a dialog.
+});

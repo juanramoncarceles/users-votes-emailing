@@ -24,7 +24,7 @@ function getEmailsPreview(version) {
       emailingDetails.innerHTML = `<h3>${emailsContent[0].subject}</h3><p>${emailsContent[0].from.replace('<','&lt;').replace('>','&gt;')}</p>`;
       const previewEmailsContent = emailsContent.map(content => {
         return `<div class="email-content">
-            <p class="recipient"><strong>Recipient (bcc): </strong><span>${content.bcc}</span></p>
+            <p class="recipient"><strong>Recipient (bcc): </strong><span>${content.bcc.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span></p>
             <div class="email-body">${content.html}</div>
           </div>`
       });      

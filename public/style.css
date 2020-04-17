@@ -1,17 +1,17 @@
 :root {
+  font-family: 'Quicksand', sans-serif;
   --global-width: 80%;
   --global-max-width: 850px;
 }
 
 body {
   margin: 0;
-  font-family: sans-serif;
 }
 
 .main-container {
   width: var(--global-width);
   max-width: var(--global-max-width);
-  margin: 9rem auto 2rem;
+  margin: 13.5rem auto 2rem;
 }
 
 .header {
@@ -19,12 +19,14 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  background-color: #f4f4f4;
+  background-color: #0088a7;
   box-shadow: 0px 2px 4px #B5B5B5;
 }
 
 h1 {
   text-align: center;
+  color: #fff;
+  text-shadow: 0px 1px 3px #4d4d4d;
 }
 
 .controls {
@@ -36,8 +38,27 @@ h1 {
   margin: auto;
 }
 
-.emails-list-container {
-  margin-top: 13rem;
+.button {
+  cursor: pointer;
+  padding: 0.35rem 1.2rem;
+  border: 1px solid #FFF;
+  border-radius: 3px;
+  font-family: inherit;
+  font-weight: 300;
+  background-color: #ffffff57;
+  transition: background-color 0.2s;
+}
+
+.button:hover {
+  background-color: #fff;
+}
+
+.version-form > label {
+  color: #fff;
+}
+
+.version-form > select {
+  font-family: inherit;
 }
 
 .email-body {
@@ -65,6 +86,7 @@ h1 {
 .emailing-details {
   text-align: center;
   border-top: 1px solid #cacaca;
+  background-color: #f4f4f4;
 }
 
 .emailing-details > h3 {

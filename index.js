@@ -180,24 +180,25 @@ function createPageTemplate(versions) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <link rel="stylesheet" href="style.css">
       <title>User Votes Emailing</title>
+      <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300&display=swap" rel="stylesheet">
     </head>
     <body>
       <div class="header">
-        <h1>Emails to be send</h1>
+        <h1>User Votes Emailing</h1>
         <div class="controls">
-          <form>
-            <label for="versionSelect">Choose a version:</label>
+          <form class="version-form">
+            <label for="versionSelect">Version </label>
             <select name="version" id="versionSelect">
-                <option value="">--Choose a version--</option>
+                <option value="">- none -</option>
                 ${versionsOptions}
             </select>
           </form>
-          <button id="sendEmailsBtn">Send emails</button>
+          <button id="sendEmailsBtn" class="button">Send emails</button>
         </div>
         <div id="emailingDetails" class="emailing-details"></div>
       </div>
       <div class="main-container">
-        <div id="emailsPreview" class="emails-list-container"></div>
+        <div id="emailsPreview"></div>
       </div>
       <script type="text/javascript" src="./client.js"></script>
     </body>

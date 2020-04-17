@@ -1,8 +1,7 @@
-FRONT-END
-Add dialog to confirm the action of sending the emails.
+FRONT-END:
+  ☐ Add dialog to confirm the action of sending the emails. @1h
 
 
-BACK-END
-Add nodemailer to send emails.
-
-Read also names associated to emails on the Google sheet.
+BACK-END:
+  ☐ Add Nodemailer to send emails. @30m
+  ☐ Read also names associated to emails on the Google sheet. @1h30m

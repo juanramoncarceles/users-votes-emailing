@@ -1,6 +1,7 @@
 FRONT-END:
   ☐ Add dialog to confirm the action of sending the emails. @1h
   ☐ Handle the response object after sending the emails. @1h
+  ☐ Avoid fetching when default/placeholder option is selected in the version dropdown.
 
 
 BACK-END:

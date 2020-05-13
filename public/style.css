@@ -2,6 +2,7 @@
   font-family: 'Quicksand', sans-serif;
   --global-width: 80%;
   --global-max-width: 850px;
+  --theme-color: #0088a7;
 }
 
 body {
@@ -19,7 +20,7 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  background-color: #0088a7;
+  background-color: var(--theme-color);
   box-shadow: 0px 2px 4px #B5B5B5;
 }
 
@@ -96,4 +97,28 @@ h1 {
 .emailing-details > p {
   margin: 0;
   padding-bottom: 0.5rem;
+}
+
+.dialog-bg {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  z-index: 10;
+  background-color: rgba(150, 150, 150, 0.7);;
+}
+
+.dialog-bg > .dialog-container {
+  padding: 1rem;
+  background-color: #fff;
+  border: 3px solid var(--theme-color);
+}
+
+.dialog-bg > .dialog-container > div:last-child {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-around;
 }

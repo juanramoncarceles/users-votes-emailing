@@ -62,7 +62,44 @@ function sendEmails() {
 }
 
 
+/**
+ * Shows a dialog with a message and an optional action.
+ * TODO missing the text inside buttons as parameters.
+ * @param {string} message 
+ * @param {CallableFunction} action 
+ */
+function showDialog(message, action = undefined) {
+  const dialogBgWrapper = document.createElement('div');
+  dialogBgWrapper.classList.add('dialog-bg');
+  const dialogContainer = document.createElement('div');
+  dialogContainer.classList.add('dialog-container');
+  dialogBgWrapper.appendChild(dialogContainer);
+  const buttonsContainer = document.createElement('div');
+  if (action) {
+    // Add action button
+    const mainButton = document.createElement('button');
+    mainButton.onclick = action;
+    mainButton.innerText = 'Send';
+    buttonsContainer.appendChild(mainButton);
+  }
+  // Create cancel button
+  const secondaryButton = document.createElement('button');
+  secondaryButton.onclick = () => dialogBgWrapper.remove();
+  secondaryButton.innerText = 'Cancel';
+  buttonsContainer.appendChild(secondaryButton);
+  dialogContainer.appendChild(buttonsContainer);
+  dialogContainer.insertAdjacentHTML('afterbegin', `<span>${message}</span>`);
+  document.body.appendChild(dialogBgWrapper);
+}
+
+
+
+// Test function
+function sayHello() {
+  console.log('hello');
+}
+
+
 sendEmailsBtn.addEventListener('click', () => {
-  // Show dialog with a question: 'Emails are going to be send. Do you want to proceed?
-  sendEmails(); // TODO: Call this instead from the confirm button of a dialog.
+  showDialog('Emails are going to be send. Do you want to proceed?', sayHello); // replace by sendEmails
 });

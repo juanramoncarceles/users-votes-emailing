@@ -15,57 +15,56 @@ module.exports = {
     const dataToSend = [];
     rawData.forEach((bug, i) => {
       if (i !== 0) {
-        dataToSend.push({bugs: [bug[1]], emails: bug.slice(2)});
+        dataToSend.push({bug: bug[1], emails: bug.slice(2)});
       }
     });
     // console.log(dataToSend);
 
     // Restructuration of the data to send to avoid sending more than one email to the same user.
     // Basically users that reported more than one bug are merged so the user only receives one email with all the bugs.
-    dataToSend.forEach((mail, i, arr) => {
-      if (i === 0) {
-        return;
-      }
-      mail.emails.forEach(address => {
-        arr.forEach((obj, j) => {
-          if (j >= i) {
-            return;
-          }
-          if (obj.emails.includes(address)) {
-            if (obj.emails.length > 1) {
-              // Remove the address from the other array          
-              obj.emails.splice(obj.emails.indexOf(address), 1);
-              // Add bug to the current array of bugs
-              obj.bugs.forEach(bug => {mail.bugs.push(bug)});
-            } else if (obj.emails.length === 1) {
-              // Remove the address from the current array
-              mail.emails.length = 0;
-              // Add the bug to the other array of bugs
-              mail.bugs.forEach(bug => {obj.bugs.push(bug)});
-            }
-          }
-        });
+    // 1 - Create a new array with one item per bug/user combination.
+    const step1Array = [];
+    dataToSend.forEach(obj => {
+      obj.emails.forEach(email => {
+        step1Array.push({ bug: obj.bug, email: email });
       });
     });
-    // console.log(dataToSend);
+    // 2 - Merge the repeated users.
+    const step2Array = [];
+    step1Array.forEach(obj => {
+      const bugsPerEmailObj = step2Array.find(o => o.email === obj.email);
+      if (bugsPerEmailObj !== undefined) {
+        bugsPerEmailObj.bugs.push(obj.bug);
+      } else {
+        step2Array.push({ bugs: [obj.bug], email: obj.email });
+      }
+    });
+    // 3 - Merge the equal arrays of bugs.
+    const step3Array = [];
+    step2Array.forEach(obj => {
+      const bugsPerEmailsObj = step3Array.find(o => areArraysEqual(o.bugs, obj.bugs));
+      if (bugsPerEmailsObj !== undefined) {
+        bugsPerEmailsObj.emails.push(obj.email);
+      } else {
+        step3Array.push({ bugs: [...obj.bugs], emails: [obj.email] });
+      }
+    });
 
-    // Creation of the mailOptions objects required by nodemailer.
-    // Since some objects from dataToSend could have no addresses after restructuration those should be skiped when creating the mailOptions
+
     /*
-    // Example of mailOptions:
-    
-    // Common fields: from, to, cc, bcc, subject, text, html, attachments.
+    Example of mailOptions object:
+    Common fields are: from, to, cc, bcc, subject, text, html, attachments.
     const mailOptions = {
       from: sender,
       bcc: 'juanramoncarceles@gmail.com, ramoncarcelesroman@gmail.com',
       subject: 'User votes test',
       text: 'That was easy!'
-    };
-    
+    };    
     */
 
+    // Creation of the mailOptions objects required by nodemailer.
     const mailOptions = [];
-    dataToSend.forEach(data => {
+    step3Array.forEach(data => {
       if (data.emails.length !== 0) {
         mailOptions.push({
           from: sender,
@@ -121,4 +120,22 @@ function createPlainTextEmailBody(version, bugs, url) {
   Thank you and kind regards.
   
   `;
+}
+
+
+/**
+ * Checks if to arrays contain the same values.
+ * @param {Array} arr1 
+ * @param {Array} arr2 
+ * @returns {boolean}
+ */
+function areArraysEqual(arr1, arr2) { 
+  if (arr1.length === arr2.length) {
+    for (let i = 0; i < arr1.length; i++) {
+      if(!arr2.includes(arr1[i])) return false;
+    }
+    return true;
+  } else {
+    return false;
+  } 
 }

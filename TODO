@@ -4,4 +4,6 @@ FRONT-END:
 
 BACK-END:
   ☐ Add Nodemailer to send emails. @30m
+  ☐ Add PugJS to create the HTML templates. @20m
   ☐ Read also names associated to emails on the Google sheet. @1h30m
+  ☐ Unify the google.sheets('v4'). @15m

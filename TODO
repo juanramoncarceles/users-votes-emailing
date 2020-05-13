@@ -1,9 +1,13 @@
 FRONT-END:
   ☐ Add dialog to confirm the action of sending the emails. @1h
+  ☐ Handle the response object after sending the emails. @1h
 
 
 BACK-END:
-  ☐ Add Nodemailer to send emails. @30m
   ☐ Add PugJS to create the HTML templates. @20m
   ☐ Read also names associated to emails on the Google sheet. @1h30m
   ☐ Unify the google.sheets('v4'). @15m
+  ☐ Trim any whitespace before and after an email address so they can be compared successfuly.
+
+  DONE:
+    ✔ Add Nodemailer to send emails. @30m @done(20-05-13 18:02)

@@ -54,9 +54,11 @@ function sendEmails() {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ order: 'send' }),
-  }).then(res => {
-    console.log(res);
-  });
+  }).then(res => res.json())
+    .then(data => {
+      console.log(data);
+      // TODO Handle response, depending if it is an error or success.
+    });
 }
 
 

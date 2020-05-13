@@ -1,5 +1,5 @@
 {
-  "name": "User Votes Emailing",
+  "name": "user-votes-emailing",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,7 +12,8 @@
   "dependencies": {
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "googleapis": "^39.2.0"
+    "googleapis": "^39.2.0",
+    "nodemailer": "^6.4.6"
   },
   "devDependencies": {
     "eslint": "^6.8.0"

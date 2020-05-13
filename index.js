@@ -4,6 +4,7 @@ const fs = require('fs');
 const fsPromises = fs.promises;
 const readline = require('readline');
 const {google} = require('googleapis');
+const nodemailer = require('./nodemailer');
 
 const emailDataManagement = require('./emailDataManagement');
 
@@ -207,16 +208,6 @@ function createPageTemplate(versions) {
 
 
 /**
- * 
- * @param {Object} mailOptions 
- */
-async function sendEmails(mailOptions) {
-  console.log(mailOptions);
-  // TODO: nodemailer.sendMails(mailOptions);
-}
-
-
-/**
  * Global variable to store the emails content to be send by Nodemailer.
  * @type {MailOptions[]} Array of Nodemailer mailOptions objects.
  */
@@ -267,13 +258,16 @@ app.post('/emails/preview', (request, response) => {
 
 
 app.post('/emails/send', (request, response) => {
-  const order = request.body.order;
-  console.log(order);
-  // sendEmails(emailsContent).then(resolved => {
-  //   // send the succes to remove the waiting.
-  //   response.json({ status: 'success' });
-  // }, rejected => {
-  //   // send the error to remove the waiting.
-  //   response.json({ status: 'error' });
-  // });
+  if (request.body.order === 'send') {
+    nodemailer.sendMails(emailsContent).then(resolved => { // eslint-disable-line no-unused-vars
+      // Send the success to remove the waiting.
+      response.json({ status: 'success' });
+    }, rejected => {
+      // Send the error to remove the waiting.
+      response.json({
+        status: 'error',
+        reason: rejected
+       });
+    });
+  }
 });

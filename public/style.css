@@ -112,12 +112,25 @@ h1 {
 }
 
 .dialog-bg > .dialog-container {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  max-width: 85%;
   padding: 1rem;
   background-color: #fff;
   border: 3px solid var(--theme-color);
 }
 
-.dialog-bg > .dialog-container > div:last-child {
+.dialog-bg > .dialog-container > .dialog-loader {
+  display: none;
+  margin: 1rem auto 0;
+}
+
+.dialog-bg > .dialog-container.waiting > .dialog-loader {
+  display: block;
+}
+
+.dialog-bg > .dialog-container > .dialog-buttons {
   margin-top: 1rem;
   display: flex;
   justify-content: space-around;

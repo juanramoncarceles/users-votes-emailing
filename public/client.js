@@ -47,19 +47,33 @@ selectVersion.addEventListener('change', e => {
  * Executes the request to send the emails from the backend.
  * TODO: Disable the option to call this function if any preview has been requested.
  */
-function sendEmails() {
-  fetch('http://localhost:3000/emails/send', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ order: 'send' }),
-  }).then(res => res.json())
-    .then(data => {
-      console.log(data);
-      // TODO Handle response, depending if it is an error or success.
+async function sendEmails() {
+  try {
+    const sendEmailsRes = await fetch('http://localhost:3000/emails/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ order: 'send' }),
     });
+    if (sendEmailsRes.ok === true && sendEmailsRes.status === 200) {
+      return sendEmailsRes.json();
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
 }
+
+
+const svgLoader = `
+  <svg width="38" height="38" viewBox="0 0 38 38">
+    <g transform="translate(1 1)" stroke-width="2" fill="none" stroke="#0088a7">
+      <circle stroke-opacity=".5" cx="18" cy="18" r="18"/>
+      <path d="M36 18c0-9.94-8.06-18-18-18" transform="rotate(153.876 18 18)">
+        <animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/>
+      </path>
+    </g>
+  </svg>`;
 
 
 /**
@@ -74,11 +88,37 @@ function showDialog(message, action = undefined) {
   const dialogContainer = document.createElement('div');
   dialogContainer.classList.add('dialog-container');
   dialogBgWrapper.appendChild(dialogContainer);
+  const loaderIconContainer = document.createElement('div');
+  loaderIconContainer.classList.add('dialog-loader');
+  loaderIconContainer.innerHTML = svgLoader;
   const buttonsContainer = document.createElement('div');
+  buttonsContainer.classList.add('dialog-buttons');
   if (action) {
     // Add action button
     const mainButton = document.createElement('button');
-    mainButton.onclick = action;
+    mainButton.onclick = () => {
+      // Button is disabled.
+      mainButton.onclick = null;
+      mainButton.disabled = true;
+      if (action.constructor.name === 'AsyncFunction') {
+        // If action is async show a loader icon until action is resolved.
+        dialogContainer.classList.add('waiting');
+        action().then(res => {
+          if (res.status === 'success') {
+            dialogBgWrapper.remove();
+            showDialog('Emails sent successfully!');
+          } else if (res.status === 'error') {
+            console.log(res.reason);
+            dialogBgWrapper.remove();
+            showDialog('ERROR: ' + JSON.stringify(res.reason));
+          }
+        }).catch(error => console.error('Error:', error));
+      } else {
+        // If action is not async just close the dialog after the action.
+        action();
+        dialogBgWrapper.remove();
+      }
+    };
     mainButton.innerText = 'Send';
     buttonsContainer.appendChild(mainButton);
   }
@@ -87,19 +127,13 @@ function showDialog(message, action = undefined) {
   secondaryButton.onclick = () => dialogBgWrapper.remove();
   secondaryButton.innerText = 'Cancel';
   buttonsContainer.appendChild(secondaryButton);
+  dialogContainer.appendChild(loaderIconContainer);
   dialogContainer.appendChild(buttonsContainer);
   dialogContainer.insertAdjacentHTML('afterbegin', `<span>${message}</span>`);
   document.body.appendChild(dialogBgWrapper);
 }
 
 
-
-// Test function
-function sayHello() {
-  console.log('hello');
-}
-
-
 sendEmailsBtn.addEventListener('click', () => {
-  showDialog('Emails are going to be send. Do you want to proceed?', sayHello); // replace by sendEmails
+  showDialog('Emails are going to be send. Do you want to proceed?', sendEmails); // replace by sendEmails
 });

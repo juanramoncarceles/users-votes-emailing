@@ -6,7 +6,6 @@ FRONT-END:
 
 
 BACK-END:
-  ☐ Add PugJS to create the HTML templates. @20m
   ☐ Unify the google.sheets('v4'). @15m
   ☐ Trim any whitespace before and after an email address so they can be compared successfuly.
   ☐ Once the emails have been send clear the content of the variable that holds the emails options to avoid sending them again.
@@ -14,6 +13,7 @@ BACK-END:
 
   
 DONE:
+  ✔ Add PugJS to create the HTML templates. @20m @done(20-06-26 17:39)
   ✔ Disable 'Send Emails' button if no option has been chosen in the version dropdown. @done(20-06-26 16:27)
   ✔ When a new option is selected the current emails should be removed and a loader visible util the new data is avaialble. @done(20-06-26 15:56)
   ✔ Avoid fetching when default/placeholder option is selected in the version dropdown. @done(20-06-26 15:56)

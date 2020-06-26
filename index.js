@@ -9,9 +9,6 @@ const nodemailer = require('./nodemailer');
 const emailDataManagement = require('./emailDataManagement');
 
 const express = require('express');
-// Express initialization.
-const app = express();
-
 
 
 // If modifying these scopes, delete token.json.
@@ -168,44 +165,6 @@ async function listBugsData(version) {
 }
 
 
-/**
- * Returns the HTML page as a string.
- * @param {String Array} versions For example: ["2.5", "2.6", "2.7"]
- */
-function createPageTemplate(versions) {
-  const versionsOptions = versions.map(v => `<option value="${v}">${v}</option>`).join('');
-  return `<!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="stylesheet" href="style.css">
-      <title>User Votes Emailing</title>
-      <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300&display=swap" rel="stylesheet">
-    </head>
-    <body>
-      <div class="header">
-        <h1>User Votes Emailing</h1>
-        <div class="controls">
-          <form class="version-form">
-            <label for="versionSelect">Version </label>
-            <select name="version" id="versionSelect">
-                <option value="">- none -</option>
-                ${versionsOptions}
-            </select>
-          </form>
-          <button id="sendEmailsBtn" class="button disabled">Send emails</button>
-        </div>
-        <div id="emailingDetails" class="emailing-details"></div>
-      </div>
-      <div class="main-container">
-        <div id="emailsPreview"></div>
-      </div>
-      <script type="text/javascript" src="./client.js"></script>
-    </body>
-    </html>`;
-}
-
 
 /**
  * Global variable to store the emails content to be send by Nodemailer.
@@ -213,6 +172,11 @@ function createPageTemplate(versions) {
  */
 let emailsContent;
 
+// Express initialization.
+const app = express();
+
+// View engine.
+app.set('view engine', 'pug');
 
 // Required to parse URL-encoded bodies as sent by HTML forms.
 //app.use(express.urlencoded());
@@ -229,8 +193,8 @@ app.listen(3000, function() {
 
 app.get('/', function(req, res) {
     getSpreadsheetSheetsTitles().then(titles => {
-      const pageTemplate = createPageTemplate(titles);
-      res.send(pageTemplate);
+      // 'titles' will be an array of strings like this one: ["2.5", "2.6", "2.7"]
+      res.render('index', { title: 'User Votes Emailing', versions: titles });
     }, rej => {
       //console.log('Rejected response: ', rej);
       res.status(500).send('<strong>Internal Server Error:</strong> ' + rej.toString());

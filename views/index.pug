@@ -1,0 +1,23 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    link(rel="stylesheet" href="style.css")
+    title= title
+    link(href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300&display=swap" rel="stylesheet")
+  body
+    div(class="header")
+      h1= title
+      div(class="controls")
+        form(class="version-form")
+          label(for="versionSelect") Version 
+          select(name="version" id="versionSelect")
+            option(value="") - none -
+            each v in versions
+              option(value=v)= v
+        button(id="sendEmailsBtn" class="button disabled") Send emails
+      div(id="emailingDetails" class="emailing-details")
+    div(class="main-container")
+      div(id="emailsPreview")
+    script(type="text/javascript" src="./client.js")

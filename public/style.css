@@ -50,8 +50,17 @@ h1 {
   transition: background-color 0.2s;
 }
 
-.button:hover {
+.button:not(.disabled):hover {
   background-color: #fff;
+}
+
+.button.disabled:focus {
+  outline: none;
+}
+
+.button.disabled {
+  cursor: unset;
+  opacity: 0.5;
 }
 
 .version-form > label {

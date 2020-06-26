@@ -194,7 +194,7 @@ function createPageTemplate(versions) {
                 ${versionsOptions}
             </select>
           </form>
-          <button id="sendEmailsBtn" class="button">Send emails</button>
+          <button id="sendEmailsBtn" class="button disabled">Send emails</button>
         </div>
         <div id="emailingDetails" class="emailing-details"></div>
       </div>

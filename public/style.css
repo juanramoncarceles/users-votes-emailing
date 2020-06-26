@@ -99,6 +99,12 @@ h1 {
   padding-bottom: 0.5rem;
 }
 
+.emails-loader > svg {
+  display: block;
+  margin: auto;
+  padding-top: 3rem;
+}
+
 .dialog-bg {
   position: fixed;
   width: 100vw;

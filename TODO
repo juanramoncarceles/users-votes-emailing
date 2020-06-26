@@ -1,8 +1,9 @@
 FRONT-END:
-  ☐ Add also input for an optional url to a page with infor about the new version. Could be an input below the dropdown.
-  ☐ Avoid fetching when default/placeholder option is selected in the version dropdown.
+  ☐ Add also input for an optional url to a page with info about the new version. Could be an input below the dropdown.
   ☐ Disable 'Send Emails' button if no option has been chosen in the version dropdown.
   ☐ Style dialog buttons.
+  ☐ Once the emails have been sent, on the success dialog the only button should be called "Close" not "Cancel".
+  ☐ Once the emails have been sent remove the previews from the body.
 
 
 BACK-END:
@@ -10,9 +11,12 @@ BACK-END:
   ☐ Read also names associated to emails on the Google sheet. @1h30m
   ☐ Unify the google.sheets('v4'). @15m
   ☐ Trim any whitespace before and after an email address so they can be compared successfuly.
+  ☐ Once the emails have been send clear the content of the variable that holds the emails options to avoid sending them again.
 
   
 DONE:
+  ✔ When a new option is selected the current emails should be removed and a loader visible util the new data is avaialble. @done(20-06-26 15:56)
+  ✔ Avoid fetching when default/placeholder option is selected in the version dropdown. @done(20-06-26 15:56)
   ✔ Handle the response object after sending the emails. @1h @done(20-05-18 17:44)
   ✔ Add Nodemailer to send emails. @30m @done(20-05-13 18:02)
   ✔ Add dialog to confirm the action of sending the emails. @1h @done(20-05-18 12:29)

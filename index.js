@@ -246,7 +246,7 @@ app.post('/emails/preview', (request, response) => {
     listBugsData(ver).then(bugsData => {
       if (bugsData.length > 0) {
         // Format it to mailOptions objects for nodemailer.
-        emailsContent = emailDataManagement.createMailOptions('Ramon <ramon@asuni.com>', ver, bugsData, ''); // Last one will be in the request.body.url
+        emailsContent = emailDataManagement.createMailOptions('Ramon <ramon@asuni.com>', ver, bugsData, 'https://discourse.mcneel.com/t/visualarq-2-version-2-8-1-released/102543'); // Last one will be in the request.body.url
         response.json(emailsContent);
       } else {
         response.json(null);

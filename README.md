@@ -17,7 +17,7 @@ Then once the version that includes the fix or feature was released the app fetc
   * `MAIL_PASS=`*mypassword*
 
 * At the beginning of the `index.js` file locate a variable called `spreadSheetId` and set the id of the corresponding Google Sheet that you will be working with. The id can be located in the url of the Google Sheet. It looks like this one:
-`https://docs.google.com/spreadsheets/d/`*1pqQSmY8VzqUo9MXLiY7AW6LqFyB6CA*`/edit#gid=363095`
+  * `https://docs.google.com/spreadsheets/d/`*1pqQSmY8VqUo9MLiY7A6LqFyB6CA*`/edit#gid=363095`
 
 * To be able to use the Google Sheets API you have to create a `credentials.json` file and place it in the root directory. You can get this file from the [Google Developers Console](https://console.developers.google.com/). Access it, go to the *Library* section and enable the Google Sheets API. Alternatively you can follow the [official Node.js Quickstart](https://developers.google.com/sheets/api/quickstart/nodejs) to enable the API. Once you are done, make sure you download the `credentials.json` file and place it in the root directory of the app.
 

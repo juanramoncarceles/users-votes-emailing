@@ -6,13 +6,15 @@ FRONT-END:
 
 
 BACK-END:
-  ☐ Unify the google.sheets('v4'). @15m
   ☐ Trim any whitespace before and after an email address so they can be compared successfuly.
   ☐ Once the emails have been send clear the content of the variable that holds the emails options to avoid sending them again.
   ☐ Read also names associated to emails on the Google sheet? @1h30m
+  ☐ Once emails have been send add to the end of the name of the sheet _ so it can be identified as already sent.
+  ☐ Skip versions with _ at the end on the version dropdown since they have aready been sent.
 
   
 DONE:
+  ✔ Unify the google.sheets('v4'). @15m @done(20-07-05 10:15)
   ✔ Add PugJS to create the HTML templates. @20m @done(20-06-26 17:39)
   ✔ Disable 'Send Emails' button if no option has been chosen in the version dropdown. @done(20-06-26 16:27)
   ✔ When a new option is selected the current emails should be removed and a loader visible util the new data is avaialble. @done(20-06-26 15:56)

@@ -19,6 +19,11 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 // time.
 const TOKEN_PATH = 'token.json';
 
+// Google Sheet id. It can be copied from the url.
+const spreadSheetId = '1pqQS57mgY8VzqUmok9MXLiSsY7jAWM6bLZqFyB6NfCA';
+
+// Google Sheets V4 API utility object.
+const sheets = google.sheets('v4');
 
 /**
  * Creates a promise with a question. Promise will be resolved after question is answered.
@@ -26,7 +31,7 @@ const TOKEN_PATH = 'token.json';
  * @param {Interface} rl readline.createInterface()
  * @param {string} q The question to show in the terminal.
  */
-function WaitQuestion(rl, q) {
+function waitQuestion(rl, q) {
   let response;
   rl.setPrompt(q);
   rl.prompt();
@@ -61,7 +66,7 @@ async function getNewToken(oAuth2Client) {
     input: process.stdin,
     output: process.stdout,
   });
-  const code = await WaitQuestion(rl, 'Enter the code from that page here: ');
+  const code = await waitQuestion(rl, 'Enter the code from that page here: ');
   try {
     if (!code) throw Error('No code was provided.');
     // This will provide an object with the access_token and refresh_token.
@@ -110,8 +115,6 @@ async function authorize() {
 }
 
 
-const sheets = google.sheets('v4');
-
 /**
  * Gets the titles from the sheets of a Google spreadsheet.
  */
@@ -121,7 +124,7 @@ async function getSpreadsheetSheetsTitles() {
     return Promise.reject(oAuth2Client.msg);
   }
   const request = {
-    spreadsheetId: '1pqQS57mgY8VzqUmok9MXLiSsY7jAWM6bLZqFyB6NfCA',
+    spreadsheetId: spreadSheetId,
     //ranges: [],  // No content requested.
     includeGridData: false,
     fields: 'sheets.properties',
@@ -145,12 +148,15 @@ async function getSpreadsheetSheetsTitles() {
  * @param {String} version The name of the sheet.
  */
 async function listBugsData(version) {
-  const auth = await authorize();
+  const oAuth2Client = await authorize();
+  if (oAuth2Client == null || oAuth2Client.error ) {
+    return Promise.reject(oAuth2Client.msg);
+  }
   const request = {
-    spreadsheetId: '1pqQS57mgY8VzqUmok9MXLiSsY7jAWM6bLZqFyB6NfCA',
-    range: version
+    spreadsheetId: spreadSheetId,
+    range: version,
+    auth: oAuth2Client,
   };
-  const sheets = google.sheets({version: 'v4', auth});
   try {
     const response = await sheets.spreadsheets.values.get(request);
     const googleSheetsData = response.data.values;

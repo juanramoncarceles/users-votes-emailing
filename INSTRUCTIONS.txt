@@ -1,0 +1,5 @@
+Run on the terminal: node index.js or node .
+
+IMPORTANT
+If emails fail to be sent, if you are using a Gmail account as a sender (the one set in the .env file),
+access your account and under Account Settings > Security enable the option 'Allow insecure apps'.

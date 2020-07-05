@@ -8,9 +8,10 @@ FRONT-END:
 BACK-END:
   ☐ Trim any whitespace before and after an email address so they can be compared successfuly.
   ☐ Once the emails have been send clear the content of the variable that holds the emails options to avoid sending them again.
-  ☐ Read also names associated to emails on the Google sheet? @1h30m
+  ☐ Make the software name in the templates come from a variable instead of hardcoded.
   ☐ Once emails have been send add to the end of the name of the sheet _ so it can be identified as already sent.
   ☐ Skip versions with _ at the end on the version dropdown since they have aready been sent.
+  ☐ Read also names associated to emails on the Google sheet? @1h30m
 
   
 DONE:

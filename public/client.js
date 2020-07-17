@@ -100,15 +100,15 @@ function showDialog(message, action = undefined) {
 /**
  * Fetches the an array of the emails contents and and adds the contents
  * to the DOM to preview them.
- * @param {string} version For example: "2.5", "2.6"...
+ * @param {Object} versionData Corresponds to an object like {title: '': sheetId: 482738}
  */
-function getEmailsPreview(version) {
+function getEmailsPreview(versionData) {
   fetch('http://localhost:3000/emails/preview', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ version: version }),
+    body: JSON.stringify(versionData),
   })
     .then(res => {
       return res.json();
@@ -140,7 +140,7 @@ selectVersion.addEventListener('change', e => {
     loaderIconContainer.classList.add('emails-loader');
     loaderIconContainer.innerHTML = svgLoader;
     emailsPreviewContainer.appendChild(loaderIconContainer);
-    getEmailsPreview(e.target.value);
+    getEmailsPreview({ title: selectVersion.options[selectVersion.selectedIndex].textContent, sheetId: e.target.value });
   } else {
     sendEmailsBtn.onclick = null;
     sendEmailsBtn.classList.add('disabled');

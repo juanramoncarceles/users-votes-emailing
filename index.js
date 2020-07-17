@@ -12,7 +12,8 @@ const express = require('express');
 
 
 // If modifying these scopes, delete token.json.
-const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
+// For only read access use 'https://www.googleapis.com/auth/spreadsheets.readonly'
 
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
@@ -24,6 +25,11 @@ const spreadSheetId = '1pqQS57mgY8VzqUmok9MXLiSsY7jAWM6bLZqFyB6NfCA';
 
 // Google Sheets V4 API utility object.
 const sheets = google.sheets('v4');
+
+/**
+ * To store an object with 'title' and 'sheetId' of the last requested sheet in the spreadsheet.
+ */
+let currentSheetData;
 
 /**
  * Creates a promise with a question. Promise will be resolved after question is answered.
@@ -116,9 +122,10 @@ async function authorize() {
 
 
 /**
- * Gets the titles from the sheets of a Google spreadsheet.
+ * Gets data from the sheets of a Google spreadsheet.
+ * @returns Array of objects with title and sheetId.
  */
-async function getSpreadsheetSheetsTitles() {
+async function getSpreadsheetSheetsProps() {
   const oAuth2Client = await authorize();
   if (oAuth2Client == null || oAuth2Client.error ) {
     return Promise.reject(oAuth2Client.msg);
@@ -132,13 +139,59 @@ async function getSpreadsheetSheetsTitles() {
   };
   try {
     const response = (await sheets.spreadsheets.get(request)).data;
-    const sheetsTitles = [];
+    const sheetsProps = [];
     for (let i = 0; i < response.sheets.length; i++) {
-      sheetsTitles.push(response.sheets[i].properties.title);
+      sheetsProps.push({ title: response.sheets[i].properties.title, sheetId: response.sheets[i].properties.sheetId });
     }
-    return sheetsTitles;
+    return sheetsProps;
   } catch (err) {
     return Promise.reject(err);
+  }
+}
+
+
+/**
+ * Changes the title and tab color of a sheet in the Google spreadsheet.
+ * @param {number} sheetId The id of the sheet.
+ * @param {string} title The new title to set.
+ * @returns True or false depending on the operation success.
+ */
+async function renameGoogleSheet(sheetId, title) { // TODO add tabColor as param and remove hardcoded values.
+  const oAuth2Client = await authorize();
+  if (oAuth2Client == null || oAuth2Client.error ) {
+    return Promise.reject(oAuth2Client.msg);
+  }
+  const request = {
+    spreadsheetId: spreadSheetId,
+    resource: {
+      requests: [{
+        updateSheetProperties: {
+          properties: {
+            sheetId: sheetId,
+            title: title,
+            tabColor: {
+              red: 1,
+              green: 0,
+              blue: 0,
+              alpha: 1.0
+            }
+          },
+          fields: 'title, tabColor'
+        }
+      }]
+    },
+    auth: oAuth2Client,
+  };
+  try {
+    const response = await sheets.spreadsheets.batchUpdate(request);
+    if (response.status === 200 && response.statusText === 'OK') {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    console.error('An error happened while tryig to rename a sheet: ' + err);
+    return false;
   }
 }
 
@@ -198,9 +251,11 @@ app.listen(3000, function() {
   });
 
 app.get('/', function(req, res) {
-    getSpreadsheetSheetsTitles().then(titles => {
-      // 'titles' will be an array of strings like this one: ["2.5", "2.6", "2.7"]
-      res.render('index', { title: 'User Votes Emailing', versions: titles });
+    getSpreadsheetSheetsProps().then(sheetsProps => {
+      // 'sheetsProps' will be an array of objects like: [{title: "2.5", sheetId: 482742}, {title: "2.6", sheetId: 429284}]
+      // Skip the ones that have title end with '_' since those are already sent.
+      const filteredProps = sheetsProps.filter(sheet => !sheet.title.endsWith('_'));
+      res.render('index', { title: 'User Votes Emailing', versions: filteredProps });
     }, rej => {
       //console.log('Rejected response: ', rej);
       res.status(500).send('<strong>Internal Server Error:</strong> ' + rej.toString());
@@ -210,13 +265,13 @@ app.get('/', function(req, res) {
 
 // Access the parse results as request.body
 app.post('/emails/preview', (request, response) => {
-    // Obtain the selected version to get the data. 
-    const ver = request.body.version;
-    console.log('Selected version: ', ver); // for example "2.7.1"
-    listBugsData(ver).then(bugsData => {
+    // Save the selected sheet data.
+    currentSheetData = request.body;
+    console.log('Selected version data: ', currentSheetData); // for example {title: "2.7.1", sheetId: 958824}
+    listBugsData(currentSheetData.title).then(bugsData => {
       if (bugsData.length > 0) {
         // Format it to mailOptions objects for nodemailer.
-        emailsContent = emailDataManagement.createMailOptions('Ramon <ramon@asuni.com>', ver, bugsData, 'https://discourse.mcneel.com/t/visualarq-2-version-2-8-1-released/102543'); // Last one will be in the request.body.url
+        emailsContent = emailDataManagement.createMailOptions('Ramon <ramon@asuni.com>', currentSheetData.title, bugsData, 'https://discourse.mcneel.com/t/visualarq-2-version-2-8-4-released/105691'); // Last one will be in the request.body.url
         response.json(emailsContent);
       } else {
         response.json(null);
@@ -230,8 +285,10 @@ app.post('/emails/preview', (request, response) => {
 app.post('/emails/send', (request, response) => {
   if (request.body.order === 'send') {
     nodemailer.sendMails(emailsContent).then(resolved => { // eslint-disable-line no-unused-vars
+      // Update some sheet properties to set the sheet as already sent.
+      renameGoogleSheet(currentSheetData.sheetId, currentSheetData.title + '_');
       // Send the success to remove the waiting.
-      response.json({ status: 'success' });
+      response.json({ status: 'success' }); // TODO send also some data to indicate also that the sheet was udpated? Example: sheetUpdated: ok ? true : false
     }, rejected => {
       // Send the error to remove the waiting.
       response.json({

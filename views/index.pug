@@ -15,7 +15,7 @@ html(lang="en")
           select(name="version" id="versionSelect")
             option(value="") - none -
             each v in versions
-              option(value=v)= v
+              option(value=v.sheetId)= v.title
         button(id="sendEmailsBtn" class="button disabled") Send emails
       div(id="emailingDetails" class="emailing-details")
     div(class="main-container")

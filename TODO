@@ -8,13 +8,18 @@ FRONT-END:
 BACK-END:
   ☐ Trim any whitespace before and after an email address so they can be compared successfuly.
   ☐ Once the emails have been send clear the content of the variable that holds the emails options to avoid sending them again.
+  ☐ Once the emails have been sent set spreadsheet text color to red.
   ☐ Make the software name in the templates come from a variable instead of hardcoded.
-  ☐ Once emails have been send add to the end of the name of the sheet _ so it can be identified as already sent.
-  ☐ Skip versions with _ at the end on the version dropdown since they have aready been sent.
   ☐ Read also names associated to emails on the Google sheet? @1h30m
+
+
+OTHER:
+  ☐ Add the info about the underscore that is added to sheet titles to avoid sending them again to the README file.
 
   
 DONE:
+  ✔ Once emails have been send add to the end of the name of the sheet _ so it can be identified as already sent. @done(20-07-17 17:09)
+  ✔ Skip versions with _ at the end on the version dropdown since they have aready been sent. @done(20-07-17 17:09)
   ✔ Unify the google.sheets('v4'). @15m @done(20-07-05 10:15)
   ✔ Add PugJS to create the HTML templates. @20m @done(20-06-26 17:39)
   ✔ Disable 'Send Emails' button if no option has been chosen in the version dropdown. @done(20-06-26 16:27)

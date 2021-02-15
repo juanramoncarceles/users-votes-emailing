@@ -4,6 +4,7 @@ const fs = require('fs');
 const fsPromises = fs.promises;
 const readline = require('readline');
 const {google} = require('googleapis');
+const config = require('./config');
 const nodemailer = require('./nodemailer');
 
 const emailDataManagement = require('./emailDataManagement');
@@ -15,15 +16,16 @@ const express = require('express');
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 // For only read access use 'https://www.googleapis.com/auth/spreadsheets.readonly'
 
-// The file token.json stores the user's access and refresh tokens, and is
-// created automatically when the authorization flow completes for the first
-// time.
+/**
+ * The file token.json stores the user's access and refresh tokens, and is
+ * created automatically when the authorization flow completes for the first
+ * time.
+ */
 const TOKEN_PATH = 'token.json';
 
-// Google Sheet id. It can be copied from the url.
-const spreadSheetId = '1pqQS57mgY8VzqUmok9MXLiSsY7jAWM6bLZqFyB6NfCA';
-
-// Google Sheets V4 API utility object.
+/**
+ * Google Sheets V4 API utility object.
+ */
 const sheets = google.sheets('v4');
 
 /**
@@ -131,7 +133,7 @@ async function getSpreadsheetSheetsProps() {
     return Promise.reject(oAuth2Client.msg);
   }
   const request = {
-    spreadsheetId: spreadSheetId,
+    spreadsheetId: config.spreadSheetId,
     //ranges: [],  // No content requested.
     includeGridData: false,
     fields: 'sheets.properties',
@@ -162,7 +164,7 @@ async function renameGoogleSheet(sheetId, title) { // TODO add tabColor as param
     return Promise.reject(oAuth2Client.msg);
   }
   const request = {
-    spreadsheetId: spreadSheetId,
+    spreadsheetId: config.spreadSheetId,
     resource: {
       requests: [{
         updateSheetProperties: {
@@ -206,7 +208,7 @@ async function listBugsData(version) {
     return Promise.reject(oAuth2Client.msg);
   }
   const request = {
-    spreadsheetId: spreadSheetId,
+    spreadsheetId: config.spreadSheetId,
     range: version,
     auth: oAuth2Client,
   };
@@ -257,8 +259,14 @@ app.get('/', function(req, res) {
       const filteredProps = sheetsProps.filter(sheet => !sheet.title.endsWith('_'));
       res.render('index', { title: 'User Votes Emailing', versions: filteredProps });
     }, rej => {
-      //console.log('Rejected response: ', rej);
-      res.status(500).send('<strong>Internal Server Error:</strong> ' + rej.toString());
+      if (rej.code === '400' && rej.message === 'invalid_grant') {
+        res.send('Error: You might have to create a new token. Stop the server, delete you current token file, restart the server and follow the steps in the terminal.');
+      } else if (rej.code === 'ENOENT' && (rej.errno === -2 || rej.errno === -4058)) {
+        res.send('Error: No token.json file, you might have to create a new one, follow the instructions on the server terminal.')
+      } else {
+        console.log('Unhandled rejected response: ', rej);
+        res.status(500).send('<strong>Internal Server Error:</strong> ' + rej.toString());
+      }
     });
   });
 
@@ -271,7 +279,8 @@ app.post('/emails/preview', (request, response) => {
     listBugsData(currentSheetData.title).then(bugsData => {
       if (bugsData.length > 0) {
         // Format it to mailOptions objects for nodemailer.
-        emailsContent = emailDataManagement.createMailOptions('Ramon <ramon@asuni.com>', currentSheetData.title, bugsData, 'https://discourse.mcneel.com/t/visualarq-2-version-2-8-4-released/105691'); // Last one will be in the request.body.url
+        // TODO the last parameter (infoUrl) would come from the client like request.body.url.
+        emailsContent = emailDataManagement.createMailOptions(config.senderEmail, currentSheetData.title, bugsData, config.infoUrl);
         response.json(emailsContent);
       } else {
         response.json(null);
